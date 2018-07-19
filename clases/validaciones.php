@@ -1,19 +1,24 @@
 <?php
 include_once "helpers.php";
 include_once "FlashMessage.php";
+include_once "../Repetido/conexion.php";
 $flashMessage = new FlashMessage();
-$connection = new mysql("localhost", "root","","blog");
+$connection = new mysqli("localhost", "root", "", "blog");
 $titulo= $_POST['titulo'];
 $contenido= $_POST['contenido'];
-$fecha = array getdate ([int $timestamp=time()]);
+$fecha = date('j-m-y');
 
 if($connection->connect_errno){
-  echo "Fallo al conectar a MYSQL(".$connection->connect_errno.")"  $connection->connect_error;
+  echo "Fallo al conectar a MYSQL(".$connection->connect_errno.")".
+    $connection->connect_error;
 }
 if(!empty($titulo) && !empty($contenido)){
-    "SELECT * FROM posts WHERE title='$titulo' "
-    "SELECT * FROM posts WHERE content='$contenido'"
+$result = $connection->query(
+    "SELECT * FROM posts WHERE title='$titulo' ",
+    "SELECT * FROM posts WHERE content='$contenido'",
     "SELECT * FROM posts WHERE date='$fecha'"
+);
+
 }else{
 $flashMessage->setMessage('Verifique que todos los campos esten llenos.');
 }
@@ -23,18 +28,14 @@ if ($flashMessage->hasMessage() || $flashMessage->hasErrors()) {
 
   // Guardando los cambios en la sesion
   $flashMessage->save();
-  header("Location: ".base_url()."index.php");
+  header("Location: "."../agregar.php");
   exit();
 }
 $result = $connection->query(
   "INSERT INTO posts (title, content, date)"."VALUES('$titulo','$contenido','$fecha')"
 );
-if ($result) {
-  $flashMessage->setSuccessMessage('Te has Registrado Exitosamente.');
-} else {
-  $flashMessage->setMessage("Falló el registro del usuario: (" . $connection->errno . ") " . $connection->error);
-}
+
 $flashMessage->save();
-header("Location: ".base_url()."index.php");
+header("Location: "."../index.php");
 exit();
  ?>
